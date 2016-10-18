@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using GeoAPI.Geometries;
 using NetTopologySuite.Algorithm;
-using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 #if !NET35
 using HS = Wintellect.PowerCollections.Set<int>;
 #else
 using HS = System.Collections.Generic.HashSet<int>;
 #endif
 
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
     /// <summary>
     /// Converts a Shapefile point to a OGIS Polygon.

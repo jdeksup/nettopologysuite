@@ -1,11 +1,15 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using GeoAPI.Geometries;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.GeoTools.Dbase;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.IO.Streams;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
     /// <summary>
     /// A simple test class for write a complete (shp, shx and dbf) shapefile structure.
@@ -33,9 +37,10 @@ namespace NetTopologySuite.IO
                 if (type == typeof(double) || type == typeof(float))
                     header.AddColumn(name, 'N', DoubleLength, DoubleDecimals);
                 else if (type == typeof(short) || type == typeof(ushort) ||
-                         type == typeof(int) || type == typeof(uint) ||
-                         type == typeof(long) || type == typeof(ulong))
+                         type == typeof(int) || type == typeof(uint))
                     header.AddColumn(name, 'N', IntLength, IntDecimals);
+                else if (type == typeof(long) || type == typeof(ulong))
+                    header.AddColumn(name, 'N', LongLength, IntDecimals);
                 else if (type == typeof(string))
                     header.AddColumn(name, 'C', StringLength, StringDecimals);
                 else if (type == typeof(bool))
@@ -54,10 +59,17 @@ namespace NetTopologySuite.IO
         /// <returns></returns>
         public static DbaseFileHeader GetHeader(string dbfFile)
         {
-            if (!File.Exists(dbfFile))
-                throw new FileNotFoundException(dbfFile + " not found");
+            return GetHeader(new ShapefileStreamProviderRegistry(dbfFile, false, true, false));
+        }
+
+        public static DbaseFileHeader GetHeader(IStreamProviderRegistry streamProviderRegistry)
+        {
+
             DbaseFileHeader header = new DbaseFileHeader();
-            header.ReadHeader(new BinaryReader(new FileStream(dbfFile, FileMode.Open, FileAccess.Read, FileShare.Read)), dbfFile);
+
+            using (var stream = streamProviderRegistry[StreamTypes.Data].OpenRead())
+            using (var reader = new BinaryReader(stream))
+                header.ReadHeader(reader, streamProviderRegistry[StreamTypes.Data] is FileStreamProvider ? ((FileStreamProvider)streamProviderRegistry[StreamTypes.Data]).Path : null);
             return header;
         }
 
@@ -77,6 +89,7 @@ namespace NetTopologySuite.IO
         private const int DoubleLength = 18;
         private const int DoubleDecimals = 8;
         private const int IntLength = 10;
+        private const int LongLength = 18;
         private const int IntDecimals = 0;
         private const int StringLength = 254;
         private const int StringDecimals = 0;
@@ -85,8 +98,10 @@ namespace NetTopologySuite.IO
         private const int DateLength = 8;
         private const int DateDecimals = 0;
 
-        private readonly string _shpFile = String.Empty;
-        private readonly string _dbfFile = String.Empty;
+        //private readonly string _shpFile = String.Empty;
+        //private readonly string _dbfFile = String.Empty;
+
+        private IStreamProviderRegistry _streamProviderRegistry;
 
         private readonly DbaseFileWriter _dbaseWriter;
 
@@ -126,27 +141,39 @@ namespace NetTopologySuite.IO
         /// <param name="fileName">File path without any extension</param>
         /// <param name="geometryFactory"></param>
         public ShapefileDataWriter(string fileName, IGeometryFactory geometryFactory)
+            : this(fileName, geometryFactory, Encoding.GetEncoding(1252))
+        {
+
+        }
+
+        public ShapefileDataWriter(string fileName, IGeometryFactory geometryFactory, Encoding encoding)
+            : this(new ShapefileStreamProviderRegistry(fileName, false, false, false), geometryFactory, encoding)
+        {
+
+        }
+
+        public ShapefileDataWriter(IStreamProviderRegistry streamProviderRegistry, IGeometryFactory geometryFactory, Encoding encoding)
         {
             _geometryFactory = geometryFactory;
 
-            // Files            
-            _shpFile = fileName;
-            _dbfFile = fileName + ".dbf";
+            _streamProviderRegistry = streamProviderRegistry;
 
             // Writers
-            _dbaseWriter = new DbaseFileWriter(_dbfFile);
+            _dbaseWriter = new DbaseFileWriter(streamProviderRegistry, encoding);
         }
 
         /// <summary>
         /// Writes the specified feature collection.
         /// </summary>
         /// <param name="featureCollection">The feature collection.</param>
-        public void Write(IList featureCollection)
+        public void Write(IList<IFeature> featureCollection)
         {
+            ///TODO: transformer en streamable
+
             // Test if the Header is initialized
             if (Header == null)
                 throw new ApplicationException("Header must be set first!");
-            
+
 #if DEBUG
             // Test if all elements of the collections are features
             foreach (object obj in featureCollection)
@@ -161,7 +188,7 @@ namespace NetTopologySuite.IO
                 var index = 0;
                 foreach (IFeature feature in featureCollection)
                     geometries[index++] = feature.Geometry;
-                ShapefileWriter.WriteGeometryCollection(_shpFile, new GeometryCollection(geometries, _geometryFactory));
+                ShapefileWriter.WriteGeometryCollection(_streamProviderRegistry, new GeometryCollection(geometries, _geometryFactory));
 
                 // Write dbf
                 _dbaseWriter.Write(Header);

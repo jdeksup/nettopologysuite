@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using GeoAPI.Geometries;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 #if !NET35
 using HS = Wintellect.PowerCollections.Set<int>;
 #else
 using System.Linq;
 using HS = System.Collections.Generic.HashSet<int>;
 #endif
-using GeoAPI.Geometries;
 
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
     /// <summary>
     /// Abstract class that defines the interfaces that other 'Shape' handlers must implement.

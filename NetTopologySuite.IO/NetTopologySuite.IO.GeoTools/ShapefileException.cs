@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
 	/// <summary>
 	/// The exception that is thrown when a non-fatal application error occurs related to Topology functionality.

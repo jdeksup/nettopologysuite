@@ -1,56 +1,58 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{21805958-869E-49F5-A4ED-0AC8599D62F0}</ProjectGuid>
+    <ProjectGuid>{E967494E-D58B-4528-9F7F-6E4D4CDD57B5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NetTopologySuite.IO</RootNamespace>
+    <RootNamespace>NetTopologySuite.IO.GeoTools</RootNamespace>
     <AssemblyName>NetTopologySuite.IO.GeoTools</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>$(SolutionDir)$(Configuration)\$(TargetFrameworkIdentifier)$(TargetFrameworkVersion)\$(Platform)\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NET20;NET35;NET40</DefineConstants>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>$(SolutionDir)$(Configuration)\$(TargetFrameworkIdentifier)$(TargetFrameworkVersion)\$(Platform)\</OutputPath>
-    <DefineConstants>TRACE;GeoTools</DefineConstants>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\NetTopologySuite\nts.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="GeoAPI, Version=1.7.4.0, Culture=neutral, PublicKeyToken=a1a0da7def465678, processorArchitecture=MSIL">
+      <HintPath>..\..\Resources\References\GeoAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="NetTopologySuite, Version=1.14.0.0, Culture=neutral, PublicKeyToken=f580a05016ebada1, processorArchitecture=MSIL">
+      <HintPath>..\..\Resources\References\NetTopologySuite.dll</HintPath>
+    </Reference>
+    <Reference Include="PowerCollections, Version=1.0.0.0, Culture=neutral, PublicKeyToken=2573bf8a1bdddcd5, processorArchitecture=MSIL">
+      <HintPath>..\..\Resources\References\PowerCollections.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\SharedAssemblyVersion.cs">
-      <Link>Properties\SharedAssemblyVersion.cs</Link>
-    </Compile>
-    <Compile Include="..\NetTopologySuite.IO\Geometries\CoordinateBuffer.cs">
-      <Link>CoordinateBuffer.cs</Link>
-    </Compile>
     <Compile Include="BigEndianBinaryReader.cs" />
     <Compile Include="BigEndianBinaryWriter.cs" />
+    <Compile Include="CoordinateBuffer.cs" />
     <Compile Include="Dbase\ColumnStructure.cs" />
     <Compile Include="Dbase\DbaseFieldDescriptor.cs" />
     <Compile Include="Dbase\DbaseFileHeader.cs" />
@@ -58,7 +60,6 @@
     <Compile Include="Dbase\DbaseFileReader.FullFat.cs" />
     <Compile Include="Dbase\DbaseFileWriter.cs" />
     <Compile Include="Dbase\RowStructure.cs" />
-    <Compile Include="GeoToolsStreamTokenizer.cs" />
     <Compile Include="Handlers\GeometryInstantiationErrorHandling.cs" />
     <Compile Include="Handlers\MBRInfo.cs" />
     <Compile Include="Handlers\MultiLineHandler.cs" />
@@ -74,6 +75,11 @@
     <Compile Include="Handlers\ShapeMBREnumerator.cs" />
     <Compile Include="Handlers\ShapeMBREnumeratorBase.cs" />
     <Compile Include="Handlers\ShapeMBRIterator.cs" />
+    <Compile Include="NetTopologySuiteExtension\IO\Streams\FileStreamProvider.cs" />
+    <Compile Include="NetTopologySuiteExtension\IO\Streams\IStreamProvider.cs" />
+    <Compile Include="NetTopologySuiteExtension\IO\Streams\IStreamProviderRegistry.cs" />
+    <Compile Include="NetTopologySuiteExtension\IO\Streams\ShapefileStreamProviderRegistry.cs" />
+    <Compile Include="NetTopologySuiteExtension\Shape\ShapeGeometryType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shapefile.cs" />
     <Compile Include="Shapefile.FullFat.cs" />
@@ -85,26 +91,6 @@
     <Compile Include="ShapefileReader.cs" />
     <Compile Include="ShapefileReader.FullFat.cs" />
     <Compile Include="ShapefileWriter.cs" />
-    <Compile Include="TokenType.cs" />
-    <Compile Include="WktStreamTokenizer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\GeoAPI\GeoAPI\GeoAPI.csproj">
-      <Project>{FFB69466-79DE-466A-ADA7-5C47C5C5CA3A}</Project>
-      <Name>GeoAPI</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\NetTopologySuite\NetTopologySuite.csproj">
-      <Project>{5770DAA9-84E5-4770-AF43-F6B815894368}</Project>
-      <Name>NetTopologySuite</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\PowerCollections\PowerCollections\PowerCollections.csproj">
-      <Project>{5821977D-AC2C-4912-BCD0-6E6B1A756167}</Project>
-      <Name>PowerCollections</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NetTopologySuite.IO.ShapeFile\NetTopologySuite.IO.ShapeFile.csproj">
-      <Project>{ab9096a7-89dd-4abd-b535-a5258863f389}</Project>
-      <Name>NetTopologySuite.IO.ShapeFile</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

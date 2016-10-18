@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.IO.Streams;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools.Dbase
 {
     public partial class DbaseFileReader
     {
@@ -14,7 +15,7 @@ namespace NetTopologySuite.IO
             public DbaseFileEnumerator(DbaseFileReader parent)
             {
                 _parent = parent;
-                FileStream stream = new FileStream(parent._filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+                Stream stream = parent._streamProvider.OpenRead();
                 _dbfStream = new BinaryReader(stream, parent._header.Encoding);
                 ReadHeader();
             }
@@ -32,23 +33,45 @@ namespace NetTopologySuite.IO
         /// <summary>
         /// Initializes a new instance of the DbaseFileReader class.
         /// </summary>
-        /// <param name="filename"></param>
-        public DbaseFileReader(string filename)
+        /// <param name="path">The path to the Dbase file</param>
+        public DbaseFileReader(string path) 
+            : this(new FileStreamProvider(StreamTypes.Data, path, true))
         {
-            if (filename == null)
-            {
-                throw new ArgumentNullException(filename);
-            }
-            // check for the file existing here, otherwise we will not get an error
-            //until we read the first record or read the header.
-            if (!File.Exists(filename))
-            {
-                throw new FileNotFoundException(String.Format("Could not find file \"{0}\"", filename));
-            }
-            _filename = filename;
-
         }
 
+        /// <summary>
+        /// Initializes a new instance of the DbaseFileReader class.
+        /// </summary>
+        /// <param name="streamProviderRegistry">A stream provider registry</param>
+        public DbaseFileReader(IStreamProviderRegistry streamProviderRegistry)
+        {
+            if (streamProviderRegistry == null)
+                throw new ArgumentNullException("streamProviderRegistry");
+
+            _streamProvider = streamProviderRegistry[StreamTypes.Data];
+            if (_streamProvider == null)
+                throw new ArgumentException("Stream provider registry does not provide a data stream provider", "streamProviderRegistry");
+
+            if (_streamProvider == null)
+                throw new ArgumentException(string.Format(
+                    "Misconfigured stream provider registry does provide a {0} stream provider when requested data stream provider", 
+                    _streamProvider.Kind), "streamProviderRegistry");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the DbaseFileReader class.
+        /// </summary>
+        /// <param name="streamProvider">A stream provider</param>
+        public DbaseFileReader(IStreamProvider streamProvider)
+        {
+            if (streamProvider == null)
+                throw new ArgumentNullException("streamProvider");
+
+            if (streamProvider.Kind != StreamTypes.Data)
+                throw new ArgumentException("Not a data stream provider", "streamProvider");
+
+            _streamProvider = streamProvider;
+        }
 
         /// <summary>
         /// Gets the header information for the dbase file.
@@ -58,16 +81,13 @@ namespace NetTopologySuite.IO
         {
             if (_header == null)
             {
-                FileStream stream = new FileStream(_filename, FileMode.Open, FileAccess.Read);
-                BinaryReader dbfStream = new BinaryReader(stream);
-
-                _header = new DbaseFileHeader();
-                // read the header
-                _header.ReadHeader(dbfStream, _filename);
-
-                dbfStream.Close();
-                stream.Close();
-
+                using (var stream = _streamProvider.OpenRead())
+                using (var dbfStream = new BinaryReader(stream))
+                {
+                    _header = new DbaseFileHeader();
+                    // read the header
+                    _header.ReadHeader(dbfStream, _streamProvider is FileStreamProvider ? ((FileStreamProvider)_streamProvider).Path : null);
+                }
             }
             return _header;
         }

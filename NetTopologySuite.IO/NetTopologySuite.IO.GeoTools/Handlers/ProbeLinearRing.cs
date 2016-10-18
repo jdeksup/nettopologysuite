@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
 
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
     /// <summary>
     /// Serves to probe linear rings

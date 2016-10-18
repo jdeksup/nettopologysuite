@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.IO;
 using GeoAPI.Geometries;
+using NetTopologySuite.IO.GeoTools.Dbase;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.IO.Streams;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
     /// <summary>
     /// Creates a IDataReader that can be used to enumerate through an ESRI shape file.
@@ -56,6 +58,33 @@ namespace NetTopologySuite.IO
             _shpEnumerator = _shpReader.GetEnumerator();
             _moreRecords = true;
         }
+
+        public ShapefileDataReader(IStreamProviderRegistry streamProviderRegistry, IGeometryFactory geometryFactory)
+        {
+            if (streamProviderRegistry==null)
+                throw new ArgumentNullException("streamProviderRegistry");
+            if (geometryFactory == null)
+                throw new ArgumentNullException("geometryFactory");
+            _open = true;
+
+            _dbfReader = new DbaseFileReader(streamProviderRegistry);
+            _shpReader = new ShapefileReader(streamProviderRegistry, geometryFactory);
+
+            _dbfHeader = _dbfReader.GetHeader();
+            _recordCount = _dbfHeader.NumRecords;
+
+            // copy dbase fields to our own array. Insert into the first position, the shape column
+            _dbaseFields = new DbaseFieldDescriptor[_dbfHeader.Fields.Length + 1];
+            _dbaseFields[0] = DbaseFieldDescriptor.ShapeField();
+            for (int i = 0; i < _dbfHeader.Fields.Length; i++)
+                _dbaseFields[i + 1] = _dbfHeader.Fields[i];
+
+            _shpHeader = _shpReader.Header;
+            _dbfEnumerator = _dbfReader.GetEnumerator();
+            _shpEnumerator = _shpReader.GetEnumerator();
+            _moreRecords = true;
+        }
+
         bool _moreRecords = false;
 
         IGeometry geometry = null;

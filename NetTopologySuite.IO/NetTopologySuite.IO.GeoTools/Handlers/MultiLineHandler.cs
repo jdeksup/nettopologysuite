@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using GeoAPI.Geometries;
-using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
     /// <summary>
     /// Converts a Shapefile multi-line to a OGIS LineString/MultiLineString.

@@ -1,6 +1,6 @@
 ﻿using GeoAPI.Geometries;
 
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
 	public class MBRInfo
 	{

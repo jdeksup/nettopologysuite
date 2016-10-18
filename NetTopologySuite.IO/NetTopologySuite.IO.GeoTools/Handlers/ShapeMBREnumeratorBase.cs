@@ -1,9 +1,10 @@
-﻿using GeoAPI.Geometries;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using GeoAPI.Geometries;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
     internal abstract class ShapeMBREnumeratorBase : IEnumerator<MBRInfo>
     {

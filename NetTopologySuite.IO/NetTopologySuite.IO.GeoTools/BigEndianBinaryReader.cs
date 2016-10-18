@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
 	/// <summary>
     /// Extends the <see cref="System.IO.BinaryReader" /> class to allow reading of integers and doubles 

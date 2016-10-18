@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using GeoAPI.Geometries;
-using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 using NetTopologySuite.Utilities;
 
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
     /// <summary>
     /// Converts a Shapefile point to a OGIS Polygon.

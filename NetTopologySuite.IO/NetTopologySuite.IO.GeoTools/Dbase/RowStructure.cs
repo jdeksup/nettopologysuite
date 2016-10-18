@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.ComponentModel;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools.Dbase
 {
 	/// <summary>
 	/// Implements ICustomTypeDescriptor so we can simulate a row object having a property for every field.

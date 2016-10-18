@@ -1,0 +1,5 @@
+D:\JDK\OctaVE\Solution\GPReseaux\bin\Debug\NetTopologySuite.IO.GeoTools.dll
+D:\JDK\OctaVE\Solution\GPReseaux\bin\Debug\NetTopologySuite.IO.GeoTools.pdb
+D:\JDK\OctaVE\Solution\GPReseaux\NetTopologySuite.IO.GeoTools\obj\Debug\NetTopologySuite.IO.GeoTools.csprojResolveAssemblyReference.cache
+D:\JDK\OctaVE\Solution\GPReseaux\NetTopologySuite.IO.GeoTools\obj\Debug\NetTopologySuite.IO.GeoTools.dll
+D:\JDK\OctaVE\Solution\GPReseaux\NetTopologySuite.IO.GeoTools\obj\Debug\NetTopologySuite.IO.GeoTools.pdb

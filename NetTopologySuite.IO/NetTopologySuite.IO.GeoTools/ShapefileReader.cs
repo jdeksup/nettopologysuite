@@ -5,16 +5,18 @@ using System.Diagnostics;
 using System.IO;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.Handlers;
+using NetTopologySuite.IO.GeoTools.Handlers;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.IO.Streams;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
     /// <summary>
     /// This class represnts an ESRI Shapefile.
     /// </summary>
     public partial class ShapefileReader : IEnumerable
     {
-        private readonly string _filename;
+        private IStreamProviderRegistry _shapeStreamProviderRegistry;
         private readonly IGeometryFactory _geometryFactory;
         private readonly ShapefileHeader _mainHeader;
 

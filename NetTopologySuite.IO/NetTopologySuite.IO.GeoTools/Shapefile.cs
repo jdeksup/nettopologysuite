@@ -1,12 +1,14 @@
 using System;
 using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.Handlers;
+using NetTopologySuite.IO.GeoTools.Handlers;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.IO.Streams;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
     /// <summary>
-    /// This class is used to read and write ESRI Shapefiles.
+    ///     This class is used to read and write ESRI Shapefiles.
     /// </summary>
     public partial class Shapefile
     {
@@ -14,7 +16,7 @@ namespace NetTopologySuite.IO
         internal const int Version = 1000;
 
         /// <summary>
-        /// Given a geomtery object, returns the equivalent shape file type.
+        ///     Given a geomtery object, returns the equivalent shape file type.
         /// </summary>
         /// <param name="geom">A Geometry object.</param>
         /// <returns>The equivalent for the geometry object.</returns>
@@ -28,7 +30,7 @@ namespace NetTopologySuite.IO
             switch (geom.OgcGeometryType)
             {
                 case OgcGeometryType.Point:
-                    switch (((IPoint)geom).CoordinateSequence.Ordinates)
+                    switch (((IPoint) geom).CoordinateSequence.Ordinates)
                     {
                         case Ordinates.XYM:
                             return ShapeGeometryType.PointM;
@@ -39,7 +41,7 @@ namespace NetTopologySuite.IO
                             return ShapeGeometryType.Point;
                     }
                 case OgcGeometryType.MultiPoint:
-                    switch (((IPoint)geom.GetGeometryN(0)).CoordinateSequence.Ordinates)
+                    switch (((IPoint) geom.GetGeometryN(0)).CoordinateSequence.Ordinates)
                     {
                         case Ordinates.XYM:
                             return ShapeGeometryType.MultiPointM;
@@ -51,7 +53,7 @@ namespace NetTopologySuite.IO
                     }
                 case OgcGeometryType.LineString:
                 case OgcGeometryType.MultiLineString:
-                    switch (((ILineString)geom.GetGeometryN(0)).CoordinateSequence.Ordinates)
+                    switch (((ILineString) geom.GetGeometryN(0)).CoordinateSequence.Ordinates)
                     {
                         case Ordinates.XYM:
                             return ShapeGeometryType.LineStringM;
@@ -63,7 +65,7 @@ namespace NetTopologySuite.IO
                     }
                 case OgcGeometryType.Polygon:
                 case OgcGeometryType.MultiPolygon:
-                    switch (((IPolygon)geom.GetGeometryN(0)).Shell.CoordinateSequence.Ordinates)
+                    switch (((IPolygon) geom.GetGeometryN(0)).Shell.CoordinateSequence.Ordinates)
                     {
                         case Ordinates.XYM:
                             return ShapeGeometryType.PolygonM;
@@ -73,7 +75,7 @@ namespace NetTopologySuite.IO
                         default:
                             return ShapeGeometryType.Polygon;
                     }
-                /*
+                    /*
                 case OgcGeometryType.GeometryCollection:
                     if (geom.NumGeometries > 1)
                     {
@@ -135,7 +137,7 @@ namespace NetTopologySuite.IO
         }
 
         /// <summary>
-        /// Returns the appropriate class to convert a shaperecord to an OGIS geometry given the type of shape.
+        ///     Returns the appropriate class to convert a shaperecord to an OGIS geometry given the type of shape.
         /// </summary>
         /// <param name="type">The shapefile type.</param>
         /// <returns>An instance of the appropriate handler to convert the shape record to a Geometry object.</returns>
@@ -172,7 +174,7 @@ namespace NetTopologySuite.IO
         }
 
         /// <summary>
-        /// Returns an ShapefileDataReader representing the data in a shapefile.
+        ///     Returns an ShapefileDataReader representing the data in a shapefile.
         /// </summary>
         /// <param name="filename">The filename (minus the . and extension) to read.</param>
         /// <param name="geometryFactory">The geometry factory to use when creating the objects.</param>
@@ -181,9 +183,21 @@ namespace NetTopologySuite.IO
         {
             if (filename == null)
                 throw new ArgumentNullException("filename");
+
+            return
+                CreateDataReader(
+                    new ShapefileStreamProviderRegistry(new FileStreamProvider(StreamTypes.Shape, filename + ".shp", true),
+                        new FileStreamProvider(StreamTypes.Data, filename + ".dbf", true), true, true), geometryFactory);
+        }
+
+        public static ShapefileDataReader CreateDataReader(IStreamProviderRegistry streamProviderRegistry,
+            GeometryFactory geometryFactory)
+        {
+            if (streamProviderRegistry == null)
+                throw new ArgumentNullException("streamProviderRegistry");
             if (geometryFactory == null)
                 throw new ArgumentNullException("geometryFactory");
-            var shpDataReader = new ShapefileDataReader(filename, geometryFactory);
+            var shpDataReader = new ShapefileDataReader(streamProviderRegistry, geometryFactory);
             return shpDataReader;
         }
     }

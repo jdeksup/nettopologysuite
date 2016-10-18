@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Text;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
+using System.Text;
+using GeoAPI.Geometries;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.GeoTools.Dbase;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
     public partial class Shapefile
     {
@@ -185,6 +188,33 @@ namespace NetTopologySuite.IO
             else if (type == typeof(char[]))
                 return String.Format("nvarchar({0}) ", length);
             throw new NotSupportedException("Need to add the SQL type for " + type.Name);
+        }
+
+        /// <summary>
+        /// Imports a shapefile into a database table.
+        /// </summary>
+        /// <remarks>
+        /// This method assumes a table has already been crated in the database.
+        /// Calling this method does not close the connection that is passed in.
+        /// </remarks>
+        /// <param name="filename"></param>
+        /// <param name="connectionstring"></param>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static IEnumerable<IGeometry> ReadShapefile(string filename, GeometryFactory geometryFactory)
+        {
+            if (filename == null)
+                throw new ArgumentNullException("filename");
+            if (geometryFactory == null)
+                throw new ArgumentNullException("geometryFactory");
+
+            ShapefileDataReader shpfileDataReader = new ShapefileDataReader(filename, geometryFactory);
+            
+            IEnumerator enumerator = shpfileDataReader.GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                yield return shpfileDataReader.Geometry;
+            }
         }
     }
 }

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using GeoAPI.Geometries;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
     public class NullShapeHandler : ShapeHandler
     {

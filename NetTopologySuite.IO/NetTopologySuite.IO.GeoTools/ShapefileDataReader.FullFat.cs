@@ -4,8 +4,9 @@ using System.Data;
 using System.Diagnostics;
 using System.Globalization;
 using GeoAPI.Geometries;
+using NetTopologySuite.IO.GeoTools.Dbase;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
     public partial class ShapefileDataReader : IEnumerable, IDataReader, IDataRecord
     {

@@ -1,4 +1,4 @@
-namespace NetTopologySuite.IO.Handlers
+namespace NetTopologySuite.IO.GeoTools.Handlers
 {
     /// <summary>
     /// Possible ways of handling geometry creation issues.

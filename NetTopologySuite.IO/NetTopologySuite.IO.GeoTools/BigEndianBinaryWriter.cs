@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
 	/// <summary>
     /// Extends the <see cref="BinaryWriter" /> class to allow the writing of integers 

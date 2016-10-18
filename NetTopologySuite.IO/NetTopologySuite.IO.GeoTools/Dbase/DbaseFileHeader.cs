@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools.Dbase
 {
     /// <summary>
     /// Class for holding the information assicated with a dbase header.
@@ -108,10 +108,11 @@ namespace NetTopologySuite.IO
             LdidToEncoding = new Dictionary<byte, Encoding>();
             EncodingToLdid = new Dictionary<Encoding, byte>();
 
-            foreach (object[] pair in dbfCodePages)
-            {
-                AddLdidEncodingPair(Convert.ToByte(pair[0]), Convert.ToInt32(pair[1]));
-            }
+            RegisterEncodings(dbfCodePages);
+            //foreach (object[] pair in dbfCodePages)
+            //{
+            //    AddLdidEncodingPair(Convert.ToByte(pair[0]), Convert.ToInt32(pair[1]));
+            //}
 
             // Add ANSI values 3 and 0x57 as system's default encoding, and 0 which means no encoding.
             AddLdidEncodingPair(0, Encoding.UTF8);
@@ -133,6 +134,7 @@ namespace NetTopologySuite.IO
             if (enc == null)
                 throw new ArgumentNullException("enc");
             _encoding = enc;
+            _fieldDescriptions = new DbaseFieldDescriptor[0];
         }
 
         /// <summary>
@@ -197,8 +199,8 @@ namespace NetTopologySuite.IO
         /// <param name="decimalCount">The decimal count only applies to numbers(N), and floating point values (F), and refers to the number of characters to reserve after the decimal point.</param>
         public void AddColumn(string fieldName, char fieldType, int fieldLength, int decimalCount)
         {
-            if (fieldLength <= 0) fieldLength = 1;
-            if (_fieldDescriptions == null) _fieldDescriptions = new DbaseFieldDescriptor[0];
+            if (fieldLength <= 0) 
+                fieldLength = 1;
             int tempLength = 1;  // the length is used for the offset, and there is a * for deleted as the first byte
             DbaseFieldDescriptor[] tempFieldDescriptors = new DbaseFieldDescriptor[_fieldDescriptions.Length + 1];
             for (int i = 0; i < _fieldDescriptions.Length; i++)
@@ -223,53 +225,54 @@ namespace NetTopologySuite.IO
             tempFieldDescriptors[_fieldDescriptions.Length].Name = tempFieldName;
 
             // the field type
-            if ((fieldType == 'C') || (fieldType == 'c'))
+            switch (fieldType)
             {
-                tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'C';
-                if (fieldLength > 254) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Which is longer than 254, not consistent with dbase III");
-            }
-            else if ((fieldType == 'S') || (fieldType == 's'))
-            {
-                tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'C';
-                Trace.WriteLine("Field type for " + fieldName + " set to S which is flat out wrong people!, I am setting this to C, in the hopes you meant character.");
-                if (fieldLength > 254) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Which is longer than 254, not consistent with dbase III");
-                tempFieldDescriptors[_fieldDescriptions.Length].Length = 8;
-            }
-            else if ((fieldType == 'D') || (fieldType == 'd'))
-            {
-                tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'D';
-                if (fieldLength != 8) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Setting to 8 digets YYYYMMDD");
-                tempFieldDescriptors[_fieldDescriptions.Length].Length = 8;
-            }
-            else if ((fieldType == 'F') || (fieldType == 'f'))
-            {
-                tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'F';
-                if (fieldLength > 20) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Preserving length, but should be set to Max of 20 not valid for dbase IV, and UP specification, not present in dbaseIII.");
-            }
-            else if ((fieldType == 'N') || (fieldType == 'n'))
-            {
-                tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'N';
-                if (fieldLength > 18) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Preserving length, but should be set to Max of 18 for dbase III specification.");
-                if (decimalCount < 0)
-                {
-                    Trace.WriteLine("Field Decimal Position for " + fieldName + " set to " + decimalCount + " Setting to 0 no decimal data will be saved.");
-                    tempFieldDescriptors[_fieldDescriptions.Length].DecimalCount = 0;
-                }
-                if (decimalCount > fieldLength - 1)
-                {
-                    Trace.WriteLine("Field Decimal Position for " + fieldName + " set to " + decimalCount + " Setting to " + (fieldLength - 1) + " no non decimal data will be saved.");
-                    tempFieldDescriptors[_fieldDescriptions.Length].DecimalCount = fieldLength - 1;
-                }
-            }
-            else if ((fieldType == 'L') || (fieldType == 'l'))
-            {
-                tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'L';
-                if (fieldLength != 1) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Setting to length of 1 for logical fields.");
-                tempFieldDescriptors[_fieldDescriptions.Length].Length = 1;
-            }
-            else
-            {
-                throw new NotSupportedException("Unsupported field type " + fieldType + " For column " + fieldName);
+                case 'C':
+                case 'c':
+                    tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'C';
+                    if (fieldLength > 254) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Which is longer than 254, not consistent with dbase III");
+                    break;
+                case 'S':
+                case 's':
+                    tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'C';
+                    Trace.WriteLine("Field type for " + fieldName + " set to S which is flat out wrong people!, I am setting this to C, in the hopes you meant character.");
+                    if (fieldLength > 254) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Which is longer than 254, not consistent with dbase III");
+                    tempFieldDescriptors[_fieldDescriptions.Length].Length = 8;
+                    break;
+                case 'D':
+                case 'd':
+                    tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'D';
+                    if (fieldLength != 8) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Setting to 8 digets YYYYMMDD");
+                    tempFieldDescriptors[_fieldDescriptions.Length].Length = 8;
+                    break;
+                case 'F':
+                case 'f':
+                    tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'F';
+                    if (fieldLength > 20) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Preserving length, but should be set to Max of 20 not valid for dbase IV, and UP specification, not present in dbaseIII.");
+                    break;
+                case 'N':
+                case 'n':
+                    tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'N';
+                    if (fieldLength > 18) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Preserving length, but should be set to Max of 18 for dbase III specification.");
+                    if (decimalCount < 0)
+                    {
+                        Trace.WriteLine("Field Decimal Position for " + fieldName + " set to " + decimalCount + " Setting to 0 no decimal data will be saved.");
+                        tempFieldDescriptors[_fieldDescriptions.Length].DecimalCount = 0;
+                    }
+                    if (decimalCount > fieldLength - 1)
+                    {
+                        Trace.WriteLine("Field Decimal Position for " + fieldName + " set to " + decimalCount + " Setting to " + (fieldLength - 1) + " no non decimal data will be saved.");
+                        tempFieldDescriptors[_fieldDescriptions.Length].DecimalCount = fieldLength - 1;
+                    }
+                    break;
+                case 'L':
+                case 'l':
+                    tempFieldDescriptors[_fieldDescriptions.Length].DbaseType = 'L';
+                    if (fieldLength != 1) Trace.WriteLine("Field Length for " + fieldName + " set to " + fieldLength + " Setting to length of 1 for logical fields.");
+                    tempFieldDescriptors[_fieldDescriptions.Length].Length = 1;
+                    break;
+                default:
+                    throw new NotSupportedException("Unsupported field type " + fieldType + " For column " + fieldName);
             }
             // the length of a record
             tempLength = tempLength + tempFieldDescriptors[_fieldDescriptions.Length].Length;
@@ -409,7 +412,7 @@ namespace NetTopologySuite.IO
         /// <param name="lcid">Language driver id</param>
         /// <param name="cpgFileName">Filename of code page file</param>
         /// <returns></returns>
-        private Encoding DetectEncodingFromMark(byte lcid, string cpgFileName)
+        private static Encoding DetectEncodingFromMark(byte lcid, string cpgFileName)
         {
             Encoding enc;
             if (LdidToEncoding.TryGetValue(lcid, out enc))
@@ -428,7 +431,7 @@ namespace NetTopologySuite.IO
             return enc;
         }
 
-        private byte GetLCIDFromEncoding(Encoding enc)
+        private static byte GetLCIDFromEncoding(Encoding enc)
         {
             byte cpId;
             if (!EncodingToLdid.TryGetValue(enc, out cpId))
@@ -541,7 +544,7 @@ namespace NetTopologySuite.IO
             try
             {
                 encToAdd = Encoding.GetEncoding(codePage);
-                return true;
+                return encToAdd != Encoding.ASCII;
             }
             catch { return false; }
         }
@@ -555,6 +558,28 @@ namespace NetTopologySuite.IO
                 return true;
             }
             catch { return false; }
+        }
+
+        private static void RegisterEncodings(object[][] ldidCodePagePairs)
+        {
+            var tmp = new Dictionary<int, EncodingInfo>();
+            foreach (EncodingInfo ei in Encoding.GetEncodings())
+                tmp.Add(ei.CodePage, ei);
+
+            foreach (var ldidCodePagePair in ldidCodePagePairs)
+            {
+                EncodingInfo ei;
+                if (tmp.TryGetValue((int) ldidCodePagePair[1], out ei))
+                {
+                    var enc = ei.GetEncoding();
+                    AddLdidEncodingPair(Convert.ToByte(ldidCodePagePair[0]), enc);
+                }
+                else
+                {
+                    var message = string.Format("Failed to get codepage for language driver {0}", ldidCodePagePair[0]);
+                    Debug.WriteLine(message);
+                }
+            }
         }
     }
 }

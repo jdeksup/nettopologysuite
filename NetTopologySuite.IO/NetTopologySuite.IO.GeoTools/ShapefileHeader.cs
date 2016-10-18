@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics;
 using GeoAPI.Geometries;
-using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.GeoTools.NetTopologySuiteExtension.Shape;
 using NetTopologySuite.Utilities;
 
-namespace NetTopologySuite.IO
+namespace NetTopologySuite.IO.GeoTools
 {
 	/// <summary>
 	/// Class that represents a shape file header record.
@@ -144,7 +144,8 @@ namespace NetTopologySuite.IO
 			file.Write(_version);
 			pos += 4;
 
-            file.Write(int.Parse(EnumUtility.Format(typeof(ShapeGeometryType), _shapeType, "d")));
+		    var format = EnumUtility.Format(typeof(ShapeGeometryType), _shapeType, "d");
+		    file.Write(int.Parse(format));
 			
             pos += 4;
 			// Write the bounding box
